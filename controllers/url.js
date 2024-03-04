@@ -13,7 +13,7 @@ async function handleGenerateNewShortURL(req, res) {
    });
 
    return res.json({ id: shortID });
-}
+} 
 
 async function handleGetAnalytics(req, res) {
    const shortId = req.params.shortId;
