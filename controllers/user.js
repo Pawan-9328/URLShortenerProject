@@ -1,7 +1,7 @@
 //..uuid id create a big type user  id we used like  a session.. 
-const {v4: uuidv4} = require('uuid');
+const { v4: uuidv4 } = require('uuid');
 const User = require('../models/user');
-const {setUser} = require('../service/auth');
+const { setUser } = require('../service/auth');
 async function handleUserSingup(req, res) {
    const { name, email, password } = req.body;
 
@@ -12,7 +12,7 @@ async function handleUserSingup(req, res) {
 
    });
    return res.redirect("/");
-  
+
 }
 
 async function handleUserLogin(req, res) {
@@ -20,12 +20,13 @@ async function handleUserLogin(req, res) {
    const user = await User.findOne({ email, password })
    //console.log("User" , user);
    if (!user)
-    return res.render('login', {
-      error: "Invalid Username or Password",
-   });
-   const sessionId = uuidv4();
-   setUser(sessionId, user);
-   res.cookie('uid', sessionId);
+      return res.render('login', {
+         error: "Invalid Username or Password",
+      });
+   // const sessionId = uuidv4();
+   // setUser(sessionId, user);
+   const token = setUser(user);
+   res.cookie('uid', token); //sessionId
    return res.redirect("/");
 
 }
