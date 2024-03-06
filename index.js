@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const { connectToMongoDB } = require('./connect');
-const {restrictToLoggedinUserOnly, checkAuth} = require('./middleware/auth');
+const { checkForAuthentication, restrictTo } = require('./middleware/auth');
 const URL = require('./models/url');
 
 const urlRoute = require('./routes/url');
@@ -24,10 +24,11 @@ app.use(express.json());
 // means we support both data json or form 
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+app.use(checkForAuthentication);
 
-app.use('/url', restrictToLoggedinUserOnly, urlRoute);
+app.use('/url', restrictTo(["NORMAL", "ADMIN"]), urlRoute);
 app.use("/user", userRoute);
-app.use('/',checkAuth, staticRouter);
+app.use('/', staticRouter);
 
 
 // app.get('/test', async (req, res) =>{
@@ -38,25 +39,25 @@ app.use('/',checkAuth, staticRouter);
 // });
 
 
-app.get('/url/:shortId', async (req, res) =>{
-    const shortId = req.params.shortId;
+app.get('/url/:shortId', async (req, res) => {
+  const shortId = req.params.shortId;
   const entry = await URL.findOneAndUpdate(
-      {
-        shortId,
+    {
+      shortId,
     },
     {
       $push: {
-          visitHistory:{
-            timestamp: Date.now(),
-          },
+        visitHistory: {
+          timestamp: Date.now(),
+        },
       },
-    } 
-    );
-    if (entry) {
-      res.redirect(entry.redirectURL);
-  } 
+    }
+  );
+  if (entry) {
+    res.redirect(entry.redirectURL);
+  }
   else {
-      res.status(404).send('URL Not Found');
+    res.status(404).send('URL Not Found');
   }
 });
 app.listen(PORT, () => console.log(`Server Started at PORT ${PORT}`));
